@@ -1,0 +1,88 @@
+ // Check if it's time to spawn a new word
+    if (spawnClock_.getElapsedTime().asSeconds() > spawnInterval_) {
+        spawnClock_.restart();
+
+        // Choose a random word from the vector
+        auto randomVectorIndex = std::rand() % mainVector_.size();
+        auto randomWordIndex = std::rand() % mainVector_[randomVectorIndex].size();
+        auto selectedWord = mainVector_[randomVectorIndex][randomWordIndex];
+
+        // Create a word
+        Word word(selectedWord, activeWord_font_);
+        word.setFillColor(sf::Color(255, 165, 0));
+        word.setOutlineThickness(2);
+
+        // Find a position that does not collide with existing words
+        sf::Vector2f newPosition;
+        bool positionValid;
+        int maxAttempts = 100; // Limit the number of attempts to avoid infinite loop
+        int attempt = 0;
+        int minDistanceBetweenWords = 50; // Adjusted distance between words
+        do {
+            newPosition = sf::Vector2f(0, 30 + std::rand() % 440); // Limit position along Y axis
+            positionValid = true;
+
+            for (const auto& existingWord : activeWords_) {
+                // Check if the new word is sufficiently far from existing words
+                if (std::abs(existingWord.getPosition().y - newPosition.y) < minDistanceBetweenWords) {
+                    positionValid = false;
+                    break;
+                }
+            }
+
+            attempt++;
+        } while (!positionValid && attempt < maxAttempts);
+
+        // Set position if a valid one is found
+        if (positionValid) {
+            word.setPosition(newPosition);
+            activeWords_.push_back(word);
+        }
+    }
+
+    // Update active words
+    for (auto& word : activeWords_) {
+        float moveDistance = speed_ * deltaTime.asSeconds();
+        word.move(sf::Vector2f(moveDistance, 0));
+
+        // Ustaw nowy rozmiar słowa
+        word.setCharacterSize(wordFontSize_);
+    }
+
+    // Remove words that are out of window bounds and decrease lives
+    for (auto iter = activeWords_.begin(); iter != activeWords_.end();) {
+        if (iter->getPosition().x > window_.getSize().x) {
+            iter = activeWords_.erase(iter);
+            --lives_;
+            liveLossSound_.play();
+            checkLives(); // Check lives after removing word
+        } else {
+            ++iter;
+        }
+    }
+
+    // Check for word matches
+    for (auto iter = activeWords_.begin(); iter != activeWords_.end(); ++iter) {
+        if (inputWord_ == iter->getString()) {
+            activeWords_.erase(iter); // Remove word from activeWords
+            inputWord_.clear(); // Clear input word
+            inputText_.setString(inputWord_); // Clear input text
+            ++points_; // Increment points
+            rightAnswerSound_.play();
+
+            // Check if it's time to increase speed
+            if (points_ % speedIncreaseInterval_ == 0) {
+                speed_ += speedIncreaseAmount_;
+            }
+
+            // Check if it's time to decrease spawn interval
+            if (points_ % speedIncreaseInterval_ == 0) {
+                spawnInterval_ -= spawnIntervalDecreaseRate_;
+                if (spawnInterval_ < 0.5f) // Limit spawn interval to minimum of 0.5 seconds
+                    spawnInterval_ = 0.5f;
+            }
+
+            break; // Break loop after first match found
+        }
+    }
+}

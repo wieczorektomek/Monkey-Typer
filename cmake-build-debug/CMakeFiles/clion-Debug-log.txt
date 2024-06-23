@@ -1,0 +1,6 @@
+C:\Users\twiec\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/twiec/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe -G Ninja -S C:\Users\twiec\CLionProjects\Moneky_typer -B C:\Users\twiec\CLionProjects\Moneky_typer\cmake-build-debug
+-- Version: 10.2.1
+-- Build type: Debug
+-- Configuring done (1.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: C:/Users/twiec/CLionProjects/Moneky_typer/cmake-build-debug
